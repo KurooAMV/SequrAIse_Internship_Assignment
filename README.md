@@ -1,5 +1,5 @@
-# SequrAlse_Internship_Assignment
-Hello SequrAlse,
+# SequrAIse_Internship_Assignment
+Hello SequrAIse,
 I am Stuti Sharan Shrivastava and this is my git hub repository for the assignment project.
 
 The project is still in process.
