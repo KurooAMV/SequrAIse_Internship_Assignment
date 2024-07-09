@@ -1,4 +1,4 @@
-# SequreAlse_Internship_Assignment
+# SequrAlse_Internship_Assignment
 Hello SequrAlse,
 I am Stuti Sharan Shrivastava and this is my git hub repository for the assignment project.
 
