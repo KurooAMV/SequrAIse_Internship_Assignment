@@ -11,11 +11,13 @@ def timeInFormat(startTime,endTime):
     return ("{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
 
 # Define video capture
-videoPath = 'C:/Users/stuti/Downloads/AI Assignment video.mp4'  # Replace with the actual video path
+videoPath = str(input("Enter the the video path (else enter 0): "))
+if videoPath=="0":
+    videoPath = 'C:/Users/stuti/Downloads/AI Assignment video.mp4'
 cap = cv2.VideoCapture(videoPath)
 
 
-outputDir=str(input("Enter the directory you wich the project to be saved at (else enter 0): ")) 
+outputDir=str(input("Enter the directory where the project to be saved at (else enter 0): ")) 
 if outputDir == "0":
     outputDir  = 'C:/Laptop remains/STUTI/Programa/Stock Predictor/Python programs/SequreAlseProject/ProcessedOutput'
 if not os.path.exists(outputDir):
