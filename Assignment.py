@@ -23,9 +23,6 @@ if outputDir == "0":
 if not os.path.exists(outputDir):
     os.makedirs(outputDir)
 
-videoOutputPath = os.path.join(outputDir, 'processedVideo.mp4')
-eventLogPath = os.path.join(outputDir, 'eventLog.txt')
-    
 # Get video properties
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -62,7 +59,16 @@ def get_quadrant(cx, cy, quadrants):
             return quadrant
     return None
 
-fourcc = cv2.VideoWriter.fourcc(*'mp4v')
+videoOutput = input("Video output format(mp4 or avi)").lower()
+if videoOutput == "mp4":
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+elif videoOutput == "avi":
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+# fourcc = cv2.VideoWriter.fourcc(*'mp4v')
+video = "processedVideo."+videoOutput
+videoOutputPath = os.path.join(outputDir, video)
+eventLogPath = os.path.join(outputDir, 'eventLog.txt')
+
 out = cv2.VideoWriter(videoOutputPath, fourcc, fps, (frame_width, frame_height))
 print("Video processing....")
 
