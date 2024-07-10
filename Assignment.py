@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import pandas as pd
 import time
-from datetime import timedelta
+import os
+# from datetime import timedelta
 
 def timeInFormat(startTime,endTime):
     hours, rem = divmod(endTime-startTime, 3600)
@@ -10,9 +11,19 @@ def timeInFormat(startTime,endTime):
     return ("{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
 
 # Define video capture
-video_path = 'C:/Users/stuti/Downloads/AI Assignment video.mp4'  # Replace with the actual video path
-cap = cv2.VideoCapture(video_path)
+videoPath = 'C:/Users/stuti/Downloads/AI Assignment video.mp4'  # Replace with the actual video path
+cap = cv2.VideoCapture(videoPath)
 
+
+outputDir=str(input("Enter the directory you wich the project to be saved at (else enter 0): ")) 
+if outputDir == "0":
+    outputDir  = 'C:/Laptop remains/STUTI/Programa/Stock Predictor/Python programs/SequreAlseProject/ProcessedOutput'
+if not os.path.exists(outputDir):
+    os.makedirs(outputDir)
+
+videoOutputPath = os.path.join(outputDir, 'processedVideo.mp4')
+eventLogPath = os.path.join(outputDir, 'eventLog.txt')
+    
 # Get video properties
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -21,16 +32,6 @@ total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
 # print(frame_height,frame_width,total_frames,fps,sep=",")
 
-# Define color ranges for HSV
-
-
-# precise_color_ranges = {
-# 'Yellow': ([40, 50, 20], [55, 60, 80]), 
-# 'Blue': ([160, 40, 40],[180, 60, 40]), 
-# 'White': ([40, 15, 35],[70, 10, 110]), 
-# 'Orange': ([5, 60, 55], [10, 50, 100])
-# }
-
 color_ranges = {
     'Yellow': ([200, 200, 0], [255, 255, 100]),
     'Blue': ([100, 0, 0], [255, 100, 100]),
@@ -38,7 +39,7 @@ color_ranges = {
     'Orange': ([0, 100, 200], [100, 180, 255])
 }
 
-# Define quadrants
+
 quadrants = {
 '1': ((1230,519), (1753,994)),
 '2': ((774,510), (1235,1016)),
@@ -48,7 +49,7 @@ quadrants = {
 
 # print(quadrants)
 # print(color_ranges)
-# Initialize tracking data and event log
+
 tracking_data = {}
 event_log = []
 
@@ -59,13 +60,12 @@ def get_quadrant(cx, cy, quadrants):
             return quadrant
     return None
 
-# Initialize video writer for processed video
 fourcc = cv2.VideoWriter.fourcc(*'mp4v')
-out = cv2.VideoWriter('processed_video.mp4', fourcc, fps, (frame_width, frame_height))
+out = cv2.VideoWriter(videoOutputPath, fourcc, fps, (frame_width, frame_height))
 print("Video processing....")
 
 startTime = time.time()
-# Process the video
+
 frame_number = 0
 # print(tracking_data)
 while cap.isOpened():
@@ -82,11 +82,11 @@ while cap.isOpened():
         lower = np.array(lower, dtype=np.uint8)
         upper = np.array(upper, dtype=np.uint8)
         mask = cv2.inRange(hsv, lower, upper)
-        # mask = cv2.inRange(frame,lower,upper)
+
         kernel = np.ones((3,3), np.uint8)
         # cv2.imshow("mask",mask)
         # cv2.waitKey(1)
-        # Apply erosion and dilation to remove and smal disturbance in the image
+        
         mask = cv2.erode(mask, kernel, iterations=2)
         mask = cv2.dilate(mask, kernel, iterations=2)
 
@@ -102,23 +102,17 @@ while cap.isOpened():
                 # print(f"center: ({cx}, {cy}), radius: {radius}")
                 cv2.circle(contour,(cx,cy),radius,(0,255,0),2)
                 
-                # print(f"Processing color: {color_name}, center: ({cx}, {cy}), radius: {radius}\n\n")
+                
                 current_quadrant = get_quadrant(cx, cy, quadrants)
-                # print(f"\nCurrent quadrant: {current_quadrant}")
 
                 if (color_name, cx, cy) not in tracking_data:
                     tracking_data[(color_name, cx, cy)] = None
                 
                 prevTime = time.time()
                 previous_quadrant = tracking_data[(color_name, cx, cy)]
-                # print(tracking_data)
-                # print(previous_quadrant)
 
                 if previous_quadrant != current_quadrant:
-                    
-                    # print(f"\nprevious quad: {previous_quadrant}\ncurrent quad : {current_quadrant}.")
                     timestamp = time.time()
-                    # print(f"\ntimestamp: {timestamp}")
                     
                     if current_quadrant is not None:
                         event_log.append((timestamp, current_quadrant, color_name, 'Entry'))
@@ -133,7 +127,6 @@ while cap.isOpened():
                     tracking_data[(color_name, cx, cy)] = current_quadrant
                     # print(tracking_data)
 
-                # Draw the detected circle
                 cv2.circle(frame, (cx, cy), radius, (0, 255, 0), 3)
                 cv2.putText(frame, color_name, (cx - radius, cy - radius - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
@@ -148,10 +141,9 @@ cap.release()
 out.release()
 cv2.destroyAllWindows()
 
-# Saving event log to text file
 if event_log:
     event_df = pd.DataFrame(event_log, columns=['Time', 'Quadrant Number', 'Ball Colour', 'Event Type'])
-    event_df.to_csv('event_log.txt', index=False, sep=',', header=True)
+    event_df.to_csv(eventLogPath, index=False, sep=',', header=True)
     print("Event log saved to 'event_log.txt'.")
 else:
     print("No events detected.")
